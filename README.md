@@ -1,11 +1,35 @@
-# BacPT
-Code for the manuscript - Bacterial proteome foundation model enhances functional prediction from enzymes to ecological interactions
 
-Tentative structure
+```markdown
+# BacPT
+
+**Bacterial Proteome Foundation Model for Enhanced Functional Prediction**
+
+Code for the manuscript: *Bacterial proteome foundation model enhances functional prediction from enzymes to ecological interactions*
+
+## Repository Structure
+
+```
 BacPT/
-├── training/          # model training scripts
-├── inference/         # loading and using the model
-├── notebooks/         # select notebooks only
-├── data/             # small sample data (if needed)
-├── environment.yml   # conda environment
-└── README.md
+├── training/          # Model training scripts
+├── inference/         # Model loading and inference utilities
+├── notebooks/         # Analysis notebooks
+├── data/              # Sample data
+├── environment.yml    # Conda environment specification
+└── README.md          # This file
+```
+
+## Installation
+
+```bash
+conda env create -f environment.yml
+conda activate bacpt
+```
+
+## Citation
+
+[Citation information will be added upon publication]
+
+## License
+
+[Add license information]
+```
