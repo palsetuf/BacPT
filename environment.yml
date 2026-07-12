@@ -1,0 +1,4 @@
+name: bacpt
+channels:
+  - conda-forge
+dependencies: []
