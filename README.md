@@ -17,7 +17,7 @@ BacPT/
 ├── src/            # Model architectures and dataset classes
 ├── training/        # Pretraining scripts for BacPT-small and BacPT-large
 ├── inference/        # Model loading and embedding-generation utilities
-├── data/          # Small demo data for the quickstart examples
+├── data/             # Small demo data for the quickstart examples
 ├── notebooks/        # Downstream analyses, one directory per application
 └── references/       # Manuscript PDF
 ```
@@ -40,14 +40,15 @@ Directories without notebooks yet are placeholders (marked with `.gitkeep`) pend
 
 ---
 
-## Installation
+## Model weights
 
-```bash
-conda env create -f environment.yml
-conda activate bacpt
-```
+BacPT model weights are public now:
 
-> **Note:** `environment.yml` is currently a placeholder and does not yet list dependencies. It will be populated with pinned package versions in a future update.
+- [BacPT-small](https://huggingface.co/palsetuf/BacPT-small)
+- [BacPT-large](https://huggingface.co/palsetuf/BacPT-large)
+
+Please follow the instructions in the corresponding Hugging Face repository to
+install the required packages and run each model.
 
 ---
 
