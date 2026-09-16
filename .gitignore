@@ -13,10 +13,20 @@ env/
 *.pth
 *.pkl
 *.cp
+/huggingface/
 /data/*
 !/data/.gitkeep
+
+# Local E. coli validation artifacts
+/scripts/check_ecoli_bacpt.py
+/scripts/check_ecoli_esm2.py
+/scripts/check_ecoli_reference.py
+/scripts/prepare_ecoli_reference.py
 
 # OS / editor
 .DS_Store
 .vscode/
 .claude/
+
+# Local planning notes
+TODO.md

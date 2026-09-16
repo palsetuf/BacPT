@@ -1,4 +1,12 @@
 name: bacpt
 channels:
   - conda-forge
-dependencies: []
+dependencies:
+  - python=3.11.9
+  - pip
+  - pip:
+      - numpy==1.26.4
+      - torch==2.7.1
+      - transformers==4.30.0
+      - safetensors==0.7.0
+      - huggingface-hub==0.36.0
