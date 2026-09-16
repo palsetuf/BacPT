@@ -16,6 +16,8 @@ env/
 /huggingface/
 /data/*
 !/data/.gitkeep
+!/data/README.md
+!/data/example_ordered_proteins.faa
 
 # Local E. coli validation artifacts
 /scripts/check_ecoli_bacpt.py

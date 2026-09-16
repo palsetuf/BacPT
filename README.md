@@ -17,7 +17,7 @@ BacPT/
 ├── src/            # Model architectures and dataset classes
 ├── training/        # Pretraining scripts for BacPT-small and BacPT-large
 ├── inference/        # Model loading and embedding-generation utilities
-├── data/             # Small demo data for the quickstart examples
+├── data/             # Minimal ordered protein FASTA example
 ├── notebooks/        # Downstream analyses, one directory per application
 └── references/       # Manuscript PDF
 ```
