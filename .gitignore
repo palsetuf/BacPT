@@ -37,6 +37,13 @@ env/
 /scripts/check_ecoli_reference.py
 /scripts/prepare_ecoli_reference.py
 
+# Withheld pending further work/review -- not ready to share yet.
+/notebooks/enzyme_activity/enzyme_final_final_code.ipynb
+/notebooks/genome_scaffolding/scaffold_detection_demo.ipynb
+/inference/scaffolding.py
+/notebooks/ecological_interactions/linear_probe_randomsplit.ipynb
+/notebooks/ecological_interactions/linear_probe_tough_split.ipynb
+
 # OS / editor
 .DS_Store
 .vscode/

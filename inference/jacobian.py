@@ -20,26 +20,10 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 
+from inference.context import prepare_2d_context
 from inference.load_bacpt import load_bacpt_release
 from inference.prepare_input import prepare_input
-
-MAX_PROTEINS = 5000
-
-
-def prepare_jacobian_context(normalized, device="cpu"):
-    """Zero-pad to 5,000 positions and build a standard 2-D attention mask."""
-    if not isinstance(normalized, np.ndarray):
-        raise TypeError("BacPT input must be a NumPy array")
-    if normalized.ndim != 2 or normalized.shape[1] != 480 or normalized.dtype != np.float32:
-        raise ValueError("BacPT input must be float32 [proteins, 480]")
-    count = min(normalized.shape[0], MAX_PROTEINS)
-    inputs = torch.from_numpy(normalized[:count]).unsqueeze(0).to(device)
-    inputs = F.pad(inputs, (0, 0, 0, MAX_PROTEINS - count))
-    mask = torch.zeros((1, MAX_PROTEINS), dtype=torch.int, device=device)
-    mask[:, :count] = 1
-    return inputs, mask, count
 
 
 def _run_batch(model, inputs_batch, mask_batch, count, device):
@@ -61,7 +45,7 @@ def compute_raw_jacobian(model, normalized, positions=None, batch_size=8, device
     consistent gene set, matching how the reference notebook computed it.
     """
     device = device or next(model.parameters()).device
-    inputs, mask, count = prepare_jacobian_context(normalized, device)
+    inputs, mask, count = prepare_2d_context(normalized, device)
     if positions is None:
         positions = np.arange(count)
     else:
