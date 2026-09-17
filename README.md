@@ -1,6 +1,8 @@
 # BacPT
 **Bacterial Proteome Foundation Model for Enhanced Functional Prediction**
 
+![BacPT overview: pretraining on bacterial proteomes and downstream applications](references/bacpt_overview.png)
+
 Code for the manuscript: _Bacterial proteome foundation model enhances functional prediction from enzymes to ecological interactions_ ([preprint](references/BacPT_reference.pdf))
 
 BacPT is a proteome foundation model trained on tens of thousands of complete bacterial genomes. It represents a genome as an ordered sequence of ESM2 protein embeddings and learns contextualized, genome-aware gene representations through a self-supervised reconstruction objective. Two model variants are described in the paper:
