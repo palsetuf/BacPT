@@ -31,10 +31,6 @@ Each subdirectory corresponds to one of the downstream applications described in
 | `notebooks/gene_interactions/` | Gene interaction / Jacobian matrix computation (Figure 3B), runnable end-to-end from the bundled E. coli K-12 example; does not include the STRING benchmarking shown in Figure 3C–D |
 | `notebooks/ecological_interactions/` | Ecological interaction outcome prediction (Figure 5), runnable end-to-end on synthetic species/labels generated in the notebook; point `inference/ecological_interactions.py`'s CLI at your own FASTA directory and labels CSV for real analysis |
 
-Enzyme activity prediction (Figure 2), operon classification (Figure 3A),
-biosynthetic gene cluster identification (Figure 3E–H), metabolic trait
-prediction (Figure 4), and genome scaffolding (Figure 1H) are not included
-in this release.
 
 ---
 
