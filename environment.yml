@@ -5,8 +5,25 @@ dependencies:
   - python=3.11.9
   - pip
   - pip:
+      # Inference stack: pinned to match huggingface/*/requirements.txt,
+      # i.e. the environment the released BacPT-small/BacPT-large weights
+      # were verified against. The original training runs used torch 2.4.1
+      # (conda env torch27_complete) rather than 2.7.1; that difference
+      # isn't expected to matter for RoFormerModel/RobertaModel under
+      # transformers==4.30.0, but is noted here for provenance.
       - numpy==1.26.4
       - torch==2.7.1
       - transformers==4.30.0
       - safetensors==0.7.0
       - huggingface-hub==0.36.0
+      # Training-only additions, pinned to the versions actually used in
+      # the original torch27_complete training environment.
+      - pandas==2.3.1
+      - scipy==1.16.0
+      - scikit-learn==1.7.0  # unpickles the StandardScaler/IncrementalPCA used by src/utils.py dataset classes
+      - matplotlib==3.9.1
+      - tqdm==4.67.1
+      - accelerate==1.12.0
+      - tensorboard==2.16.2
+      - biopython==1.86
+      - fair-esm==2.0.0  # needed by inference/generate_esm2.py; see data/ecoli_k12/README.md

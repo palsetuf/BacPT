@@ -23,6 +23,7 @@ from matplotlib import pyplot as plt
 import pickle
 from matplotlib.lines import Line2D
 import scipy
+from scipy.stats import pearsonr
 from itertools import accumulate
 
 def seed_everything(seed_value):
@@ -137,17 +138,18 @@ def get_emb_scaler(embs, scaler):
     return torch.tensor(embs, dtype = torch.float32)
 
 class PCAGenomeDataset(Dataset):
-    def __init__(self, num_samples,id_vs_num_filepath = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/dataset_final/train_proteins.csv',\
-                 parent_directory = "/orange/juannanzhou/bacteria_genome/protein_faa_files/sorted_esm_embeds/480_dim", max_seq_len = 5000, pad = True,\
+    def __init__(self, num_samples, id_vs_num_filepath, parent_directory,
+                 scaler_path, pca_path, pca_scaler_for_labels_path,
+                 max_seq_len = 5000, pad = True,
                  return_original_len = False):
         self.max_seq_len = max_seq_len
         self.id_vs_num = pd.read_csv(id_vs_num_filepath)
         self.parent_directory = str(parent_directory)
         self.num_samples = num_samples
         self.pad = pad
-        self.scaler_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/scaler_onlyaa.pkl'
-        self.pca_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/pca_3dim_onlyaa.pkl'
-        self.pca_scaler_for_labels_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/pca_scaler_for_labels_onlyaa.pkl'
+        self.scaler_path = scaler_path
+        self.pca_path = pca_path
+        self.pca_scaler_for_labels_path = pca_scaler_for_labels_path
         self.return_original_len = return_original_len
         with open(self.scaler_path,'rb') as f:
             self.scaler = pickle.load(f)
@@ -186,69 +188,20 @@ class PCAGenomeDataset(Dataset):
         else:
             return self.emb, self.labels, self.attention_mask
         
-class ContigGenomeDatasetOld(Dataset):
-    def __init__(self, num_samples,id_vs_num_filepath = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/dataset_final/train_proteins_with_contig_len.csv',\
-                 parent_directory = "/orange/juannanzhou/bacteria_genome/protein_faa_files/sorted_esm_embeds/480_dim", max_seq_len = 50, pad = True):
-        self.max_seq_len = max_seq_len
-        self.id_vs_num = pd.read_csv(id_vs_num_filepath)
-        self.parent_directory = str(parent_directory)
-        self.num_samples = num_samples
-        self.pad = pad
-        self.scaler_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/scaler_onlyaa.pkl'
-        self.pca_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/pca_3dim_onlyaa.pkl'
-        self.pca_scaler_for_labels_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/pca_scaler_for_labels_onlyaa.pkl'
-        with open(self.scaler_path,'rb') as f:
-            self.scaler = pickle.load(f)
-        with open(self.pca_path,'rb') as f:
-            self.ipca = pickle.load(f)
-        with open(self.pca_scaler_for_labels_path,'rb') as f:
-            self.pca_scaler_for_labels_path = pickle.load(f)
-        self.prefix_sums = list(accumulate(self.id_vs_num.num_50l_contigs))
-        self.contig_len=50
-
-    def __len__(self):
-        if self.num_samples > 0:
-            return self.num_samples
-        if self.num_samples == -1:
-            return sum(self.id_vs_num.num_50l_contigs)
-        
-    def get_genomome_idx(self, idx):
-        for i, s in enumerate(self.prefix_sums):
-            if s >= idx:
-                return i
-    
-    def get_contig_index(self, idx):#RANDOM CONTIG SAMPLING
-        contig_start = random.randint(0, self.id_vs_num.iloc[idx].num_50l_contigs)
-        return contig_start, contig_start+self.contig_len
-
-    def __getitem__(self, idx):
-        idx = self.get_genomome_idx(idx)
-        contig_start, contig_end = self.get_contig_index(idx)
-        self.pt_file_path = os.path.join(self.parent_directory, 'onlyaa_mean_sorted_'+self.id_vs_num['Genome_ID'].iloc[idx].split('.')[0]+'.pt')
-        self.emb = torch.load(self.pt_file_path, map_location = 'cpu')[contig_start:contig_end,:]
-        # for all pcs only
-        self.emb = get_emb_scaler(self.emb, self.scaler)
-        self.labels = self.emb
-        self.attention_mask = torch.randint(1,2,(self.emb.shape[0],))
-        if self.emb.shape[0] < self.max_seq_len and self.pad==True:
-            self.attention_mask = F.pad(self.attention_mask, (0, self.max_seq_len-self.emb.shape[0]), 'constant', 0)
-            self.emb = F.pad(self.emb, (0, 0, 0, self.max_seq_len-self.emb.shape[0]), 'constant', 0.0)
-            self.labels = F.pad(self.labels, (0, 0, 0, self.max_seq_len-self.labels.shape[0]), 'constant', 0.0)
-        return self.emb, self.labels, self.attention_mask
-    
 class ContigGenomeDataset(Dataset):
     def __init__(self, num_samples,
-                 id_vs_num_filepath='/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/dataset_final/train_proteins_with_contig_len.csv',
-                 parent_directory="/orange/juannanzhou/bacteria_genome/protein_faa_files/sorted_esm_embeds/480_dim",
+                 id_vs_num_filepath,
+                 parent_directory,
+                 scaler_path, pca_path, pca_scaler_for_labels_path,
                  max_seq_len=50, pad=True):
         self.max_seq_len = max_seq_len
         self.id_vs_num = pd.read_csv(id_vs_num_filepath)
         self.parent_directory = str(parent_directory)
         self.num_samples = num_samples
         self.pad = pad
-        self.scaler_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/scaler_onlyaa.pkl'
-        self.pca_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/pca_3dim_onlyaa.pkl'
-        self.pca_scaler_for_labels_path = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/norm_5klength/pca_scaler_for_labels_onlyaa.pkl'
+        self.scaler_path = scaler_path
+        self.pca_path = pca_path
+        self.pca_scaler_for_labels_path = pca_scaler_for_labels_path
         with open(self.scaler_path, 'rb') as f:
             self.scaler = pickle.load(f)
         with open(self.pca_path, 'rb') as f:
@@ -418,12 +371,14 @@ class BacteriaLM_alllayers(RobertaModel):
         # self.embeddings.token_type_embeddings  = None
         
         if config.attn_implementation == "flash_attention_2":
-            for attention_layer in self.encoder.layer:
-                attention_layer.attention.self = FlashRobertaSelfAttention(config)
-        
+            raise NotImplementedError(
+                "attn_implementation='flash_attention_2' is not available in this release; "
+                "use attn_implementation=None (eager) instead."
+            )
+
         self.mlp = MLP(config)
         self.lm_head = BLMHead(config)
-        
+
         self.update_keys_to_ignore(config, ["lm_head.decoder.weight"])
         self.post_init()
 
@@ -438,7 +393,7 @@ class BacteriaLM_alllayers(RobertaModel):
         # sequence_output = outputs.last_hidden_state
         predicted_embeds = self.lm_head(sequence_output)
         return predicted_embeds, outputs
-    
+
 class BacteriaLM_rope(RoFormerModel):
     _keys_to_ignore_on_save = [r"lm_head.decoder.weight", r"lm_head.decoder.bias"]
     _keys_to_ignore_on_load_missing = [r"position_ids", r"lm_head.decoder.weight", r"lm_head.decoder.bias"]
@@ -455,12 +410,14 @@ class BacteriaLM_rope(RoFormerModel):
         # self.embeddings.token_type_embeddings  = None
         
         if config.attn_implementation == "flash_attention_2":
-            for attention_layer in self.encoder.layer:
-                attention_layer.attention.self = FlashRobertaSelfAttention(config)
-        
+            raise NotImplementedError(
+                "attn_implementation='flash_attention_2' is not available in this release; "
+                "use attn_implementation=None (eager) instead."
+            )
+
         self.mlp = MLP(config)
         self.lm_head = BLMHead(config)
-        
+
         # self.update_keys_to_ignore(config, ["lm_head.decoder.weight"])
         self.post_init()
 
@@ -475,7 +432,7 @@ class BacteriaLM_rope(RoFormerModel):
         # sequence_output = outputs.last_hidden_state
         predicted_embeds = self.lm_head(sequence_output)
         return predicted_embeds
-    
+
 class BacteriaLM_rope_all_layers(RoFormerModel):
     _keys_to_ignore_on_save = [r"lm_head.decoder.weight", r"lm_head.decoder.bias"]
     _keys_to_ignore_on_load_missing = [r"position_ids", r"lm_head.decoder.weight", r"lm_head.decoder.bias"]
@@ -492,12 +449,14 @@ class BacteriaLM_rope_all_layers(RoFormerModel):
         # self.embeddings.token_type_embeddings  = None
         
         if config.attn_implementation == "flash_attention_2":
-            for attention_layer in self.encoder.layer:
-                attention_layer.attention.self = FlashRobertaSelfAttention(config)
-        
+            raise NotImplementedError(
+                "attn_implementation='flash_attention_2' is not available in this release; "
+                "use attn_implementation=None (eager) instead."
+            )
+
         self.mlp = MLP(config)
         self.lm_head = BLMHead(config)
-        
+
         # self.update_keys_to_ignore(config, ["lm_head.decoder.weight"])
         self.post_init()
 
@@ -512,7 +471,7 @@ class BacteriaLM_rope_all_layers(RoFormerModel):
         # sequence_output = outputs.last_hidden_state
         predicted_embeds = self.lm_head(sequence_output)
         return predicted_embeds, outputs
-    
+
 def get_attention_from_all_layer_model(model, attention_mask, inputs_embeds):
     predicted_embeds, outputs = model(
                 attention_mask=attention_mask,
