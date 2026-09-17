@@ -28,15 +28,18 @@ Each subdirectory corresponds to one of the downstream applications described in
 
 | Directory | Paper section / figure |
 |---|---|
-| `notebooks/enzyme_activity/` | Enzyme activity prediction (Figure 2) |
-| `notebooks/operon_classification/` | Operon classification (Figure 3A) |
-| `notebooks/gene_clusters_bgc/` | Biosynthetic gene cluster identification (Figure 3E–H) |
-| `notebooks/gene_interactions/` | Gene interaction / Jacobian analysis and STRING benchmarking (Figure 3B–D) |
-| `notebooks/trait_prediction/` | Bacterial metabolic trait prediction (Figure 4) |
-| `notebooks/ecological_interactions/` | Ecological interaction outcome prediction (Figure 5) |
-| `notebooks/genome_scaffolding/` | Genome scaffolding from contigs (Figure 1H) |
+| `notebooks/gene_interactions/` | Gene interaction / Jacobian matrix computation (Figure 3B), runnable end-to-end from the bundled E. coli K-12 example; does not include the STRING benchmarking shown in Figure 3C–D |
+| `notebooks/ecological_interactions/` | Ecological interaction outcome prediction (Figure 5), runnable end-to-end on synthetic species/labels generated in the notebook; point `inference/ecological_interactions.py`'s CLI at your own FASTA directory and labels CSV for real analysis |
+| `notebooks/genome_scaffolding/` | Genome scaffolding from contigs (Figure 1H) — withheld for now, see below |
+| `notebooks/enzyme_activity/` | Enzyme activity prediction (Figure 2) — withheld for now, see below |
 
-Directories without notebooks yet are placeholders (marked with `.gitkeep`) pending upload.
+Operon classification (Figure 3A), biosynthetic gene cluster identification
+(Figure 3E–H), and metabolic trait prediction (Figure 4) are not currently
+planned for release and have no placeholder directory.
+
+`notebooks/enzyme_activity/` and `notebooks/genome_scaffolding/` are left as
+placeholders (marked with `.gitkeep`): implementations exist locally but are
+withheld pending further review before release.
 
 ---
 

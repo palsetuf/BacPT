@@ -19,11 +19,30 @@ env/
 !/data/README.md
 !/data/example_ordered_proteins.faa
 
+# E. coli K-12 files needed to run the Jacobian gene-interaction pipeline
+# (notebooks/gene_interactions/jacobian_interaction_matrix.ipynb); other
+# files in this directory (manifest.json, selected_outputs.npz) are only
+# used by the separate scripts/check_ecoli_*.py validation tooling and stay
+# ignored.
+!/data/ecoli_k12/
+/data/ecoli_k12/*
+!/data/ecoli_k12/ordered_proteins.faa
+!/data/ecoli_k12/esm2_onlyaa.npz
+!/data/ecoli_k12/scaler.npz
+!/data/ecoli_k12/protein_ids.tsv
+
 # Local E. coli validation artifacts
 /scripts/check_ecoli_bacpt.py
 /scripts/check_ecoli_esm2.py
 /scripts/check_ecoli_reference.py
 /scripts/prepare_ecoli_reference.py
+
+# Withheld pending further work/review -- not ready to share yet.
+/notebooks/enzyme_activity/enzyme_final_final_code.ipynb
+/notebooks/genome_scaffolding/scaffold_detection_demo.ipynb
+/inference/scaffolding.py
+/notebooks/ecological_interactions/linear_probe_randomsplit.ipynb
+/notebooks/ecological_interactions/linear_probe_tough_split.ipynb
 
 # OS / editor
 .DS_Store

@@ -24,10 +24,10 @@ import os
 import sys
 import gc
 import math
-sys.path.append("/blue/juannanzhou/palash.sethi/Projects/bacteria_genome")
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 os.environ['TORCH_DISTRIBUTED_DEBUG'] = 'DETAIL'
 
-from model_training.final_training_scripts import utils as BLM
+from src import utils as BLM
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -174,8 +174,11 @@ def train_bacPT(args,ratio, fixed_mask, batch_size, save_dir):
         print('~~~', seed_value)
     #TODO : Change dataset
     full_dataset = BLM.PCAGenomeDataset(num_samples=args.num_samples_total, max_seq_len = args.max_seq_len,\
-                                            id_vs_num_filepath = '/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/dataset_final/train_proteins.csv',\
-                                            parent_directory = "/orange/juannanzhou/bacteria_genome/protein_faa_files/sorted_esm_embeds/480_dim")
+                                            id_vs_num_filepath = args.id_vs_num_filepath,\
+                                            parent_directory = args.embeddings_dir,\
+                                            scaler_path = args.scaler_path,\
+                                            pca_path = args.pca_path,\
+                                            pca_scaler_for_labels_path = args.pca_scaler_for_labels_path)
     train_size = int(ratio * len(full_dataset))
     test_size = len(full_dataset) - train_size
 
@@ -300,8 +303,10 @@ def train_bacPT(args,ratio, fixed_mask, batch_size, save_dir):
                     if args.noise_percentage_type == 'constant':
                         scaled_noise = noise * BLM.get_noise_percentage(args.noise_percentage_type, epoch, epochs, args.noise_percentage)
                     if args.noise_percentage_type == 'sine':
-                        alpha, noise_r2 = BLM.sine_r2_to_alpha_scheduler(0.00, args.noise_max_r2, epochs, epoch, args.noise_num_cycles)
-                        scaled_noise = noise * alpha
+                        raise NotImplementedError(
+                            "noise_percentage_type='sine' was never implemented in the original codebase; "
+                            "use 'constant' or 'linear'."
+                        )
                     if args.noise_percentage_type == 'linear':
                         alpha, noise_r2 = BLM.linear_alpha_scheduler(args.noise_min_alpha, args.noise_max_alpha, epochs, epoch)
                         scaled_noise = noise * alpha
@@ -416,8 +421,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "Trains the bacPT contig model")
     parser.add_argument('-num_samples_total', '--num_samples_total', type=int, help='Number of training samples', default=10)
     parser.add_argument('-ratio_samples_train', '--ratio_samples_train', type=float, help='Ratio of train samples', default=0.8)
-    parser.add_argument('-d', '--data_dir', type=str, help='data directory', default="/orange/juannanzhou/bacteria_genome/roberta_bigger_runs/defaultattn_linear_alpha_allsamples/")
-    parser.add_argument('-o', '--output_path', type=str, help='train output directory', default="/blue/juannanzhou/palash.sethi/Projects/bacteria_genome/data/noise_training/defaultattn_linear_alpha_allsamples")
+    parser.add_argument('-d', '--data_dir', type=pathlib.Path, required=True, help='Directory to read/write checkpoints from (a "checkpoints" subdirectory is created here).')
+    parser.add_argument('-o', '--output_path', type=pathlib.Path, required=True, help='Directory to write TensorBoard training-run logs to.')
+    parser.add_argument('--id-vs-num-filepath', type=pathlib.Path, required=True, help='CSV mapping genome IDs to their protein count (Genome_ID column), e.g. the paper\'s train_proteins.csv.')
+    parser.add_argument('--embeddings-dir', type=pathlib.Path, required=True, help='Directory of per-genome mean ESM2 embedding .pt files, named onlyaa_mean_sorted_<Genome_ID>.pt.')
+    parser.add_argument('--scaler-path', type=pathlib.Path, required=True, help='Pickled sklearn StandardScaler used to normalize input ESM2 embeddings.')
+    parser.add_argument('--pca-path', type=pathlib.Path, required=True, help='Pickled sklearn IncrementalPCA fit on training embeddings; its per-dimension mean_/var_ are used as the noise distribution for masked-position corruption.')
+    parser.add_argument('--pca-scaler-for-labels-path', type=pathlib.Path, required=True, help='Pickled sklearn scaler for PCA-reduced labels, loaded by the dataset class for parity with the original pipeline (not read elsewhere in this script).')
     parser.add_argument('-cp', '--from_checkpoint', help='path to checkpoint if you want to re-run from checkpoint', default=None)
     parser.add_argument('--epochs', type=int, help='number epochs', default=10)
     parser.add_argument('-cp_freq', '--checkpoint_freq', type=int, help='checkpoint frequency (X epochs)', default=10)
@@ -434,7 +444,6 @@ if __name__ == "__main__":
     parser.add_argument('--hidden_act', type=str, help='hidden activation', default='gelu')
     parser.add_argument('--hidden_dropout_prob', type=float, help='final mlp dropout prob', default= 0.1)
     # parser.add_argument('--pos_type', type=str, help="position embedding type", default="relative_key_query")
-    parser.add_argument('--attn_type', type=str, help="attention type", default="flash_attention_2")
     # parser.add_argument('--return_dict_roberta', action='store_true', help='False if no hidden layers should be output', default=False)
     parser.add_argument('--no_eval', action='store_true', help='no evaluation', default=False)
     parser.add_argument('--half', action='store_true', help='half precision', default=True)
@@ -454,7 +463,7 @@ if __name__ == "__main__":
     parser.add_argument('-pca_dim', '--pca_dim', type=int, help='pca dimension', default=480)
     parser.add_argument('-seed', '--seed', type=int, help='seed value', default=25022024)
     parser.add_argument('-continue_training', action='store_true', help='continue from a previous checkpoint', default=False)
-    parser.add_argument('--contig_model_ckpt_path', type=str, help='contig_model_ckpt_path', default="/orange/juannanzhou/bacteria_genome/final_checkpoints/RoformerContigFinal_v2")
+    parser.add_argument('--contig_model_ckpt_path', type=pathlib.Path, required=True, help='Stage-1 contig-model checkpoint directory (containing a "checkpoints" subdirectory) used to seed extend_context_length for stage-2 whole-genome training.')
 
     args = parser.parse_args()
     main(args)
