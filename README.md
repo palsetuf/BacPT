@@ -31,12 +31,16 @@ Each subdirectory corresponds to one of the downstream applications described in
 | `notebooks/enzyme_activity/` | Enzyme activity prediction (Figure 2) |
 | `notebooks/operon_classification/` | Operon classification (Figure 3A) |
 | `notebooks/gene_clusters_bgc/` | Biosynthetic gene cluster identification (Figure 3E–H) |
-| `notebooks/gene_interactions/` | Gene interaction / Jacobian analysis and STRING benchmarking (Figure 3B–D) |
+| `notebooks/gene_interactions/` | Gene interaction / Jacobian matrix computation (Figure 3B), runnable end-to-end from the bundled E. coli K-12 example; does not include the STRING benchmarking shown in Figure 3C–D |
 | `notebooks/trait_prediction/` | Bacterial metabolic trait prediction (Figure 4) |
 | `notebooks/ecological_interactions/` | Ecological interaction outcome prediction (Figure 5) |
 | `notebooks/genome_scaffolding/` | Genome scaffolding from contigs (Figure 1H) |
 
-Directories without notebooks yet are placeholders (marked with `.gitkeep`) pending upload.
+`notebooks/operon_classification/`, `notebooks/gene_clusters_bgc/`, and
+`notebooks/trait_prediction/` are left as empty placeholders (marked with
+`.gitkeep`) and are not currently planned for release, unlike the other
+notebooks above which are runnable from just the released model and a
+genome.
 
 ---
 

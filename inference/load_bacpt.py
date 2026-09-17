@@ -7,6 +7,30 @@ import torch
 from src.models import bacpt_model
 
 
+def load_bacpt_release(variant, device="cpu"):
+    """Load the public Hugging Face release weights for `variant`.
+
+    Unlike load_bacpt(), this needs no local checkpoint file: it downloads
+    (and caches) model.safetensors and scaler.npz from the published
+    palsetuf/BacPT-{variant} Hub repo, the only weights actually available
+    to someone outside the original training environment.
+    """
+    from huggingface_hub import hf_hub_download
+    from safetensors.torch import load_file
+
+    repo_id = f"palsetuf/BacPT-{variant}"
+    weights_path = hf_hub_download(repo_id=repo_id, filename="model.safetensors")
+    scaler_path = hf_hub_download(repo_id=repo_id, filename="scaler.npz")
+
+    model = bacpt_model(variant)
+    state = load_file(weights_path, device="cpu")
+    if "embeddings.position_ids" in state and "embeddings.position_ids" not in model.state_dict():
+        state.pop("embeddings.position_ids")
+    model.load_state_dict(state, strict=True)
+    model = model.to(device).eval()
+    return model, Path(scaler_path)
+
+
 def load_bacpt(variant, checkpoint_path, device="cpu"):
     checkpoint_path = Path(checkpoint_path)
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True, mmap=True)
